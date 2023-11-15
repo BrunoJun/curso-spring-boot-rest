@@ -1,0 +1,270 @@
+package org.me.cursoSpringBoot.integrationtests.controller.withYaml;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.EncoderConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
+import org.junit.jupiter.api.*;
+import org.me.cursoSpringBoot.configs.TestConfigs;
+import org.me.cursoSpringBoot.integrationtests.testcontainers.AbstractIntegrationTest;
+import org.me.cursoSpringBoot.integrationtests.vo.AccountCredentialsVO;
+import org.me.cursoSpringBoot.integrationtests.vo.BookVO;
+import org.me.cursoSpringBoot.integrationtests.vo.PersonVO;
+import org.me.cursoSpringBoot.integrationtests.vo.TokenVO;
+import org.me.cursoSpringBoot.integrationtests.vo.pagedModels.PagedModelBook;
+import org.me.cursoSpringBoot.integrationtests.vo.pagedModels.PagedModelPerson;
+import org.me.cursoSpringBoot.unitTests.mapper.JsonToYamlConverter;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class BookControllerYamlTest extends AbstractIntegrationTest {
+
+	private static RequestSpecification specification;
+
+	private static JsonToYamlConverter jsonToYamlConverter;
+	private static YAMLMapper mapper;
+	private static BookVO bookVO;
+
+	private static BookVO updatebookVO;
+	private static BookVO[] booksVO;
+
+	@BeforeAll
+	public static void setup(){
+
+		jsonToYamlConverter = new JsonToYamlConverter();
+
+		mapper = new YAMLMapper();
+		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+		bookVO = new BookVO();
+		updatebookVO = new BookVO();
+	}
+
+	@Test
+	@Order(0)
+	void authorization() throws JsonProcessingException {
+
+		AccountCredentialsVO accountCredentialsVO = new AccountCredentialsVO("leandro", "admin123");
+
+		var accessToken = given()
+				.config(RestAssuredConfig.config().encoderConfig(EncoderConfig.encoderConfig().encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YAML, ContentType.TEXT)))
+				.basePath("/auth/signin")
+				.port(TestConfigs.SERVER_PORT)
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.accept(TestConfigs.CONTENT_TYPE_YAML)
+				.body(accountCredentialsVO, jsonToYamlConverter)
+				.when()
+				.post()
+				.then().statusCode(200)
+				.extract()
+				.body()
+				.as(TokenVO.class, jsonToYamlConverter).getAccessToken();
+
+		specification = new RequestSpecBuilder()
+				.addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + accessToken)
+				.setBasePath("/api/book/v1")
+				.setPort(TestConfigs.SERVER_PORT)
+				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
+				.addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+				.build();
+	}
+
+	@Test
+	@Order(1)
+	void testCreate() throws JsonProcessingException {
+
+		mockBook();
+
+		var content = given().spec(specification)
+				.config(RestAssuredConfig.config().encoderConfig(EncoderConfig.encoderConfig().encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YAML, ContentType.TEXT)))
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.accept(TestConfigs.CONTENT_TYPE_YAML)
+				.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+				.body(bookVO, jsonToYamlConverter)
+				.when()
+				.post()
+				.then().statusCode(200)
+				.extract()
+				.body()
+				.asString();
+
+		BookVO createdBook = mapper.readValue(content, BookVO.class);
+		bookVO = createdBook;
+
+		assertTrue(createdBook.getId() > 0);
+		assertNotNull(createdBook.getId());
+		assertNotNull(createdBook.getTitle());
+		assertNotNull(createdBook.getAuthor());
+		assertEquals("Darwin sem frescuras", createdBook.getTitle());
+		assertEquals("Reinaldo José Lopez e Pirula", createdBook.getAuthor());
+	}
+
+	@Test
+	@Order(2)
+	void testFindById() throws JsonProcessingException {
+
+		mockBook();
+
+		var content = given().spec(specification)
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.accept(TestConfigs.CONTENT_TYPE_YAML)
+				.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+				.pathParam("id", bookVO.getId())
+				.when()
+				.get("{id}")
+				.then().statusCode(200)
+				.extract()
+				.body()
+				.asString();
+
+		BookVO createdBook = mapper.readValue(content, BookVO.class);
+		bookVO = createdBook;
+
+		assertTrue(createdBook.getId() > 0);
+		assertNotNull(createdBook.getId());
+		assertNotNull(createdBook.getTitle());
+		assertNotNull(createdBook.getAuthor());
+		assertEquals("Darwin sem frescuras", createdBook.getTitle());
+		assertEquals("Reinaldo José Lopez e Pirula", createdBook.getAuthor());
+	}
+
+	@Test
+	@Order(3)
+	void testFindAll() throws JsonProcessingException {
+
+		mockBook();
+
+		var content = given().spec(specification)
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.accept(TestConfigs.CONTENT_TYPE_YAML)
+				.queryParams("limit", 2, "direction", "asc", "page", 0)
+				.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+				.when()
+				.get()
+				.then().statusCode(200)
+				.extract()
+				.body()
+				.asString();
+
+		PagedModelBook createdBooks = mapper.readValue(content, PagedModelBook.class);
+		var books = createdBooks.getContent();
+		BookVO bookVO1 = books.get(0);
+
+		assertEquals(3, bookVO1.getId());
+		assertEquals("Carl Sagan", bookVO1.getTitle());
+		assertEquals("Pálido ponto azul", bookVO1.getAuthor());
+	}
+
+	@Test
+	@Order(4)
+	void testUpdate() throws JsonProcessingException {
+
+		mockUpdateBook();
+
+		var content = given().spec(specification)
+				.config(RestAssuredConfig.config().encoderConfig(EncoderConfig.encoderConfig().encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YAML, ContentType.TEXT)))
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.accept(TestConfigs.CONTENT_TYPE_YAML)
+				.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+				.body(updatebookVO, jsonToYamlConverter)
+				.when()
+				.put()
+				.then().statusCode(200)
+				.extract()
+				.body()
+				.asString();
+
+		BookVO createdBook = mapper.readValue(content, BookVO.class);
+		bookVO = createdBook;
+
+		assertTrue(createdBook.getId() > 0);
+		assertNotNull(createdBook.getId());
+		assertNotNull(createdBook.getTitle());
+		assertNotNull(createdBook.getAuthor());
+		assertEquals("Pálido Ponto Azul", createdBook.getTitle());
+		assertEquals("Carl Sagan", createdBook.getAuthor());
+	}
+
+	@Test
+	@Order(5)
+	void testDelete() throws JsonProcessingException {
+
+		given().spec(specification)
+		.contentType(TestConfigs.CONTENT_TYPE_YAML)
+		.accept(TestConfigs.CONTENT_TYPE_YAML)
+		.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+		.pathParam("id", bookVO.getId())
+		.when()
+		.delete("{id}")
+		.then().statusCode(204);
+	}
+
+	@Test
+	@Order(6)
+	void testDeleteWithoutToken() throws JsonProcessingException {
+
+		 RequestSpecification specificationWithoutToken = new RequestSpecBuilder()
+				.setBasePath("/api/book/v1")
+				.setPort(TestConfigs.SERVER_PORT)
+				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
+				.addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+				.build();
+
+		given().spec(specificationWithoutToken)
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+				.pathParam("id", bookVO.getId())
+				.when()
+				.delete("{id}")
+				.then().statusCode(403);
+	}
+
+	@Test
+	@Order(7)
+	void testHateoas() throws JsonProcessingException {
+
+		mockBook();
+
+		var unthreatedContent = given().spec(specification)
+				.contentType(TestConfigs.CONTENT_TYPE_YAML)
+				.accept(TestConfigs.CONTENT_TYPE_YAML)
+				.queryParams("limit", 2, "direction", "asc", "page", 0)
+				.header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+				.when()
+				.get()
+				.then().statusCode(200)
+				.extract()
+				.body()
+				.asString();
+
+		var content = unthreatedContent.replace("\n", "").replace("\r", "");
+
+		assertTrue(content.contains("rel: \"first\"  href: \"http://localhost:8888/api/book/v1?limit=2&direction=asc&page=0&size=2&sort=title,asc\""));
+		assertTrue(content.contains("page:  size: 2  totalElements: 3  totalPages: 2  number: 0"));
+	}
+
+	private void mockBook() {
+
+		bookVO.setTitle("Darwin sem frescuras");
+		bookVO.setAuthor("Reinaldo José Lopez e Pirula");
+	}
+
+	private void mockUpdateBook() {
+
+		updatebookVO.setId(4);
+		updatebookVO.setTitle("Pálido Ponto Azul");
+		updatebookVO.setAuthor("Carl Sagan");
+	}
+}
