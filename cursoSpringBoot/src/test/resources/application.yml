@@ -3,7 +3,7 @@ server:
 cors:
   originPatterns: http://localhost:3000,http://localhost:8080,https://erudio.com.br
 file:
-  upload-dir: /Users/Jun/Documents/Cursos_geral/Curso Spring Boot/uploadDir
+  upload-dir: /home/runner/work/curso-spring-boot-rest/uploadDir
 security:
   jwt:
     token:
