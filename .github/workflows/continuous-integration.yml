@@ -24,11 +24,11 @@ jobs:
         distribution: 'adopt'
         cache: maven
     - name: Build Apllication JAR
-      working-directory: ./Curso Spring Boot/cursoSpringBoot
+      working-directory: ./curso-spring-boot-rest/cursoSpringBoot/
       run: mvn clean package
       
     - name: Docker Compose Build
-      working-directory: ./Curso Spring Boot
+      working-directory: ./curso-spring-boot-rest
       run: docker compose build
 
     - name: Push to DockerHub
