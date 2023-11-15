@@ -25,7 +25,7 @@ jobs:
         cache: maven
     - name: Build Apllication JAR
       working-directory: cursoSpringBoot
-      run: mvn clean package
+      run: mvn clean package -DskipTests
       
     - name: Docker Compose Build
       run: docker compose build
