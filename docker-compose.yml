@@ -19,7 +19,7 @@ services:
     networks:
       - curso-springboot-network
   curso-spring-boot:
-    image: brunoamanai/curso-spring-boot
+    image: brunojun/curso-spring-boot
     restart: always
     build: ./cursoSpringBoot
     working_dir: /cursoSpringBoot
