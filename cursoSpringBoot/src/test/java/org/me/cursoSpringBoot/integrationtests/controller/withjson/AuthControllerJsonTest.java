@@ -24,7 +24,7 @@ public class AuthControllerJsonTest extends AbstractIntegrationTest {
     @Order(1)
     void testSignin() throws JsonProcessingException {
 
-        AccountCredentialsVO accountCredentialsVO = new AccountCredentialsVO("leandro", "admin123");
+        AccountCredentialsVO accountCredentialsVO = new AccountCredentialsVO("bruno", "admin123");
 
         tokenVO = given()
                 .basePath("/auth/signin")
