@@ -72,8 +72,13 @@ export default function NewPerson(){
                     <input placeholder='Last Name' value={lastName} onChange={e => setLastName(e.target.value)}/>
                     <input placeholder='Address' value={address} onChange={e => setAddress(e.target.value)}/>
                     <input placeholder='Gender' value={gender} onChange={e => setGender(e.target.value)}/>
-                    <input placeholder='Enabled' value={enabled} onChange={e => setEnable(e.target.value)}/>
-
+                    <div className='select'>
+                        <label for="options">Enabled:</label>
+                        <select name='options' value={enabled} onChange={e => setEnable(e.target.value)}>
+                            <option>true</option>
+                            <option>false</option>
+                        </select>
+                    </div>
                     <button className='button' type='submit'>Add</button>
                 </form>
             </div>
