@@ -18,11 +18,50 @@ export default function Person(){
     const username = localStorage.getItem('username');
     const accessToken = localStorage.getItem('accessToken');
 
+    async function logout(){
+
+        localStorage.clear();
+        navigate('/');
+    }
+
+    async function editPerson(id){
+
+        try {
+            
+            navigate(`/person/new/${id}`);
+        } catch (error) {
+            
+            alert('Edit person failed!');
+        }
+    }
+
+    async function deletePerson(id){
+
+        try {
+            
+            await api.delete(`api/person/v1/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            setPeople(people.filter(person => person.id !== id))
+        } catch (error) {
+            
+            alert('Delete failed!');
+        }
+    }
+
     useEffect(() => {
 
         api.get('api/person/v1', {
             headers: {
                 Authorization: `Bearer ${accessToken}`
+            },
+            params: {
+                page: 0,
+                limit: 4,
+                direction: 'asc'
             }
         }).then(response => {
 
@@ -35,8 +74,8 @@ export default function Person(){
             <header>
                 <img src={logo} alt='logo image'/>
                 <span>Welcome, <strong>{username.toUpperCase()}</strong></span>
-                <Link className='button' to="/person/new">Add new person</Link>
-                <button type='button'>
+                <Link className='button' to="/person/new/0">Add new person</Link>
+                <button type='button' onClick={logout}>
                     <FiPower size={18} color='#251fc5'/>
                 </button>
             </header>
@@ -44,7 +83,7 @@ export default function Person(){
             <h1>Registered people</h1>
             <ul>
                 {people.map(person => (
-                    <li>
+                    <li key={person.id}>
                         <strong>First name:</strong>
                         <p>{person.firstName}</p>
 
@@ -57,11 +96,11 @@ export default function Person(){
                         <strong>Gender:</strong>
                         <p>{person.gender}</p>
 
-                        <button type='button'>
+                        <button onClick={() => editPerson(person.id)} type='button'>
                             <FiEdit size={20} color='251fc5'/>
                         </button>
 
-                        <button type='button'>
+                        <button onClick={() => deletePerson(person.id)} type='button'>
                             <FiTrash2 size={20} color='251fc5'/>
                         </button>
                     </li>

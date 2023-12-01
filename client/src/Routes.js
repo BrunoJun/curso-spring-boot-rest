@@ -13,7 +13,7 @@ export default function AppRoutes(){
             <Routes>
                 <Route path='/' element={<Login/>}/>
                 <Route path='/person' element={<Person/>}/>
-                <Route path='/person/new' element={<NewPerson/>}/>
+                <Route path='/person/new/:personId' element={<NewPerson/>}/>
             </Routes>
         </BrowserRouter>
     );
