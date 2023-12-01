@@ -12,6 +12,7 @@ import './styles.css'
 export default function Person(){
 
     const [people, setPeople] = useState([]);
+    const [page, setPage] = useState(0);
 
     const navigate = useNavigate();
 
@@ -52,22 +53,27 @@ export default function Person(){
         }
     }
 
-    useEffect(() => {
+    async function fetchMorePeople(){
 
-        api.get('api/person/v1', {
+        const response = await api.get('api/person/v1', {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             },
             params: {
-                page: 0,
+                page: page,
                 limit: 4,
                 direction: 'asc'
             }
-        }).then(response => {
+        });
 
-            setPeople(response.data._embedded.personVOList)
-        })
-    })
+        setPeople([...people,...response.data._embedded.personVOList]);
+        setPage(page + 1);
+    }
+
+    useEffect(() => {
+
+        fetchMorePeople();
+    }, [])
 
     return (
         <div className='person-container'>
@@ -106,6 +112,8 @@ export default function Person(){
                     </li>
                 ))}
             </ul>
+
+            <button className='button' onClick={fetchMorePeople} type='button'>Load more</button>
         </div>
     )
 }
