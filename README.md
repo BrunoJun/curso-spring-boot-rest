@@ -10,7 +10,7 @@
 
 Este repositório tem como objetivo consolidar alguns dos conhecimentos aprendidos durante o curso. A API implementada tem como intuito o aprendizado do conceito de API Restful. Além disso é apresentado o uso de conceitos de segurança de acesso a API, utilizando JWT, criação de imagem do projeto com Docker e a implementação básica de uma interface, usando Rect, para a integração com a API.
 
-:exclamation: Exist um segundo repositório deste curso, referente ao projeto de integração do ChatGPT a uma API, porém ainda não foi iniciado :exclamation:
+❗ Exist um segundo repositório deste curso, referente ao projeto de integração do ChatGPT a uma API, porém ainda não foi iniciado ❗
 
 ***
 
