@@ -2,7 +2,7 @@
 
 ## Descrição
 
-
+Repositório destinado a armazenar a evolução da implementação do projeto do curso.
 
 ***
 
