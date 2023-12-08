@@ -10,7 +10,9 @@ Repositório destinado a armazenar a evolução da implementação do projeto do
 
 Este repositório tem como objetivo consolidar alguns dos conhecimentos aprendidos durante o curso. A API implementada tem como intuito o aprendizado do conceito de API Restful. Além disso é apresentado o uso de conceitos de segurança de acesso a API, utilizando JWT, criação de imagem do projeto com Docker e a implementação básica de uma interface, usando Rect, para a integração com a API.
 
-❗ Existirá um segundo repositório deste curso, referente ao projeto de integração do ChatGPT a uma API, porém ainda não foi iniciado ❗
+Existe um segundo repositório deste curso, referente ao projeto de integração do ChatGPT a uma API, o link para ele está abaixo.
+
+<a href = "https://github.com/BrunoJun/chatgpt-spring-boot"> SEGUNDA PARTE </a>
 
 ***
 
@@ -41,8 +43,6 @@ Este repositório tem como objetivo consolidar alguns dos conhecimentos aprendid
 ## Links
 
 <a href = "https://www.udemy.com/course/restful-apis-do-0-a-nuvem-com-springboot-e-docker/"> CURSO SPRING BOOT </a>
-
-LINK PARA O SEGUNDO REPOSITÓRIO EM BREVE!
 
 ***
 
